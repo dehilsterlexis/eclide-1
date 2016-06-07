@@ -27,7 +27,13 @@ CAttributeDlg::CAttributeDlg(IAttribute *attribute, ISourceSlot * owner) : m_att
 }
 
 CBookmarksFrame *CAttributeDlg::GetBookmarksFrame() {
-    return (CBookmarksFrame *)GetIMainFrame()->m_Bookmarks;
+    CBookmarksFrame *pFrame = (CBookmarksFrame *)GetIMainFrame()->m_Bookmarks;
+    if (!pFrame)
+    {
+        return NULL;
+    }
+
+    return pFrame;
 }
 
 void CAttributeDlg::GetTitle(CString & title)

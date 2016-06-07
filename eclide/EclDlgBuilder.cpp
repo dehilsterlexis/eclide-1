@@ -102,7 +102,13 @@ bool CBuilderDlg::DoSave(bool attrOnly)
 }
 
 CBookmarksFrame *CBuilderDlg::GetBookmarksFrame() {
-    return (CBookmarksFrame *)GetIMainFrame()->m_Bookmarks;
+    CBookmarksFrame *pFrame = (CBookmarksFrame *)GetIMainFrame()->m_Bookmarks;
+    if (!pFrame)
+    {
+        return NULL;
+    }
+
+    return pFrame;
 }
 
 void CBuilderDlg::OnTimer(UINT_PTR nIDEvent)
