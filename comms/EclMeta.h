@@ -23,28 +23,27 @@ public:
     const boost::filesystem::wpath & GetPath() { return m_path; }
     bool HasPath() { return m_path.size() > 0; }
 
-    std::wstring GetValue(Element e, const std::_tstring key)
-    {
-        std::wstring value = _T("");
+    const TCHAR * GetValue(const Element & e, const std::_tstring &key, std::_tstring & retVal) {
         Element::StringStringMap::const_iterator found = e.m_attr.find(key);
         if (found != e.m_attr.end())
-            value = found->second;
-        return value;
+            retVal = found->second;
+        return retVal.c_str();
     }
-    int GetIntValue(Element e, const std::_tstring key)
+    int GetIntValue(const Element & e, const std::_tstring &key, int & retVal)
     {
-        int value = 0;
+        retVal = 0;
         Element::StringStringMap::const_iterator found = e.m_attr.find(key);
         if (found != e.m_attr.end())
-            value = std::stoi(found->second);
-        return value;
+            retVal = std::stoi(found->second);
+        return retVal;
     }
+
 };
 
 class CEclFolder : public CEclMetaData
 {
 public:
-    CEclFolder(const boost::filesystem::wpath path)
+    CEclFolder(const boost::filesystem::wpath &path)
     {
         m_path = path;
     }
@@ -69,18 +68,18 @@ public:
     void UpdateAttrs(Element &e)
     {
         std::wstring name, type;
-        m_name = GetValue(e, _T("name"));
-        m_type = GetValue(e, _T("type"));
-        m_body = GetIntValue(e, _T("body"));
-        m_end = GetIntValue(e, _T("end"));
-        m_line = GetIntValue(e, _T("line"));
-        m_start = GetIntValue(e, _T("start"));
+        GetValue(e, _T("name"), m_name);
+        GetValue(e, _T("type"), m_type);
+        GetIntValue(e, _T("body"), m_body);
+        GetIntValue(e, _T("end"), m_end);
+        GetIntValue(e, _T("line"), m_line);
+        GetIntValue(e, _T("start"), m_start);
     };
     void AddField(Element e)
     {
         std::wstring name, type;
-        name = GetValue(e, _T("name"));
-        type = GetValue(e, _T("type"));
+        GetValue(e, _T("name"), name);
+        GetValue(e, _T("type"), type);
         m_fields[name] = type;
     };
 };
@@ -105,12 +104,12 @@ public:
     void UpdateAttrs(Element &e)
     {
         std::wstring name, type;
-        m_end = GetIntValue(e, _T("end"));
-        m_line = GetIntValue(e, _T("line"));
-        m_name = GetValue(e, _T("name"));
-        m_ref = GetValue(e, _T("ref"));
-        m_start = GetIntValue(e, _T("start"));
-        m_type = GetValue(e, _T("type"));
+        GetIntValue(e, _T("end"), m_end);
+        GetIntValue(e, _T("line"), m_line);
+        GetValue(e, _T("name"), m_name);
+        GetValue(e, _T("ref"), m_ref);
+        GetIntValue(e, _T("start"), m_start);
+        GetValue(e, _T("type"), m_type);
     };
 };
 typedef StlLinked<CEclImport> CEclImportAdapt;
@@ -158,7 +157,7 @@ public:
     bool GetDefStrings(const std::_tstring & definitionName, StdStringVector &set)
     {
         bool found = false;
-        for (std::map<std::wstring, StlLinked<CEclDefinition>>::iterator itr = m_defs.begin(); itr != m_defs.end(); ++itr)
+        for (EclDefinitionMap::iterator itr = m_defs.begin(); itr != m_defs.end(); ++itr)
         {
             if (boost::algorithm::equals(definitionName, itr->first)) {
                 for (std::map<std::wstring, std::wstring>::iterator fieldItr = itr->second->m_fields.begin(); fieldItr != itr->second->m_fields.end(); ++fieldItr)
@@ -175,7 +174,7 @@ public:
     }
     CEclImport * GetImportRefs(const std::_tstring & importAsName)
     {
-        for (std::map<std::wstring, StlLinked<CEclImport>>::iterator itr = m_imports.begin(); itr != m_imports.end(); ++itr)
+        for (EclImportMap::iterator itr = m_imports.begin(); itr != m_imports.end(); ++itr)
         {
             if (boost::algorithm::iequals(importAsName, itr->first) && !boost::algorithm::equals(importAsName, itr->second->GetRef()))
             {
@@ -207,12 +206,12 @@ public:
     std::_tstring m_autoString;
     std::_tstring m_autoLast;
 
-    void LoadMetaData(const WPathVector *folders);
-    void PopulateMeta(const boost::filesystem::wpath & fileOrDir, const std::wstring path, int level=0);
+    void LoadMetaData(const WPathVector & folders);
+    void PopulateMeta(const boost::filesystem::wpath & fileOrDir, const std::wstring & dottedPath, int level = 0);
     void CEclMeta::Update(const std::wstring & xml);
     CEclFile *GetSourceFromPath(const std::_tstring & path);
     bool GetMetaModuleInfo(IAttribute *attr, const std::_tstring & token, StdStringVector &set);
-    bool AddAutoStr(StdStringVector &set, const std::_tstring & str);
+    std::_tstring AddAutoStr(StdStringVector &set, const std::_tstring & str);
     bool GetMetaParseInfo(const std::_tstring & token, const std::_tstring & key, StdStringVector &set);
     bool GetAutoC(IAttribute *attr, const std::_tstring & partialLabel, StdStringVector & set);
     int NormalizeAutoC(IAttribute *attr);

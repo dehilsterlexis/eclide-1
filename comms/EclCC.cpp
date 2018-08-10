@@ -133,7 +133,7 @@ public:
         if (found != paths.end())
             m_eclFolders.push_back(std::make_pair(found->second, false));
 
-        m_eclMeta.LoadMetaData(&m_eclFolders);
+        m_eclMeta.LoadMetaData(m_eclFolders);
     }
 
     const TCHAR * GetCacheID() const
@@ -384,6 +384,7 @@ public:
         std::_tstring xmlMeta = CallEclCC(module, attribute, path, ecl, args, out, err, hasErrors, errors);
         m_eclMeta.Update(xmlMeta);
 
+#ifdef _DEBUG
         // Temporary file saving for developmemnt
         if (xmlMeta.size() > 0) {
             std::_tstring filePath = pathToWString(m_workingFolderPath / _T("metadata.xml"));
@@ -391,6 +392,7 @@ public:
             if (file.Create(filePath.c_str()))
                 file.Write(xmlMeta);
         }
+#endif
     }
 
     const TCHAR * GetWorkunitXML(const std::_tstring & wuid, std::_tstring & wuXml) const

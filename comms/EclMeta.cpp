@@ -111,20 +111,20 @@ void CEclMeta::Update(const std::wstring & xml)
     }
 }
 
-void CEclMeta::LoadMetaData(const WPathVector *folders)
+void CEclMeta::LoadMetaData(const WPathVector & folders)
 {
-    for (WPathVector::const_iterator itr = folders->begin(); itr != folders->end(); ++itr)
+    for (WPathVector::const_iterator itr = folders.begin(); itr != folders.end(); ++itr)
     {
-        PopulateMeta(itr->first,_T(""));
+        PopulateMeta(itr->first, _T(""));
     }
 }
 
-void CEclMeta::PopulateMeta(const boost::filesystem::wpath & fileOrDir, const std::wstring dottedPath, int level)
+void CEclMeta::PopulateMeta(const boost::filesystem::wpath & fileOrDir, const std::wstring & dottedPath, int level)
 {
     if (clib::filesystem::exists(fileOrDir))
     {
         std::wstring newDottedPath;
-        
+
         if (level)
         {
             if (dottedPath.empty())
@@ -133,11 +133,7 @@ void CEclMeta::PopulateMeta(const boost::filesystem::wpath & fileOrDir, const st
                 newDottedPath = dottedPath + _T(".") + fileOrDir.stem().c_str();
         }
 
-        if (HasValidExtension(pathToWString(fileOrDir)))
-        {
-            m_masterMeta[newDottedPath] = new CEclFile(fileOrDir);
-        }
-        else if (boost::filesystem::is_directory(fileOrDir))
+        if (boost::filesystem::is_directory(fileOrDir))
         {
             if (level)
                 m_masterMeta[newDottedPath] = new CEclFolder(fileOrDir);
@@ -146,6 +142,10 @@ void CEclMeta::PopulateMeta(const boost::filesystem::wpath & fileOrDir, const st
             {
                 PopulateMeta(pathToWString(*itr), newDottedPath, ++level);
             }
+        }
+        else if (HasValidExtension(pathToWString(fileOrDir)))
+        {
+            m_masterMeta[newDottedPath] = new CEclFile(fileOrDir);
         }
     }
 }
@@ -186,18 +186,18 @@ void CEclMeta::BuildTokenStr()
 {
     std::_tstring newTokenStr= _T("");
     typedef  std::vector <CString >::iterator tIntIter;
-    int count = 0;
+    bool first = true;
     for (tIntIter iter = m_autoTokens.begin(); iter != m_autoTokens.end(); iter++)
     {
-        if (count)
-        {
-            m_autoString += _T(".") + *iter;
-        }
-        else
+        if (first)
         {
             m_autoString = *iter;
         }
-        count++;
+        else
+        {
+            m_autoString += _T(".") + *iter;
+        }
+        first = false;
     }
 }
 
@@ -298,12 +298,12 @@ bool CEclMeta::GetAutoC(IAttribute *attr, const std::_tstring & token, StdString
     return false;
 }
 
-bool CEclMeta::AddAutoStr(StdStringVector &set, const std::_tstring & str)
+std::_tstring CEclMeta::AddAutoStr(StdStringVector &set, const std::_tstring & str)
 {
     if (std::find(set.begin(), set.end(), str) == set.end())
     {
         set.push_back(str);
-        return true;
+        return str;
     }
-    return false;
+    return _T("");
 }
